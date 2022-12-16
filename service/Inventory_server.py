@@ -8,6 +8,23 @@ from concurrent import futures
 class InventoryServiceServer(Inventory_pb2_grpc.InventoryServiceServicer):
     database = {}
 
+    def __init__(self):
+        book1 = Inventory_pb2.Book()
+        book1.isbn = "1234"
+        book1.author = "testAuthor1"
+        book1.title = "testTitle1"
+        book1.genre = Inventory_pb2.Book.THRILLER
+        book1.publishingYear = 2000
+        self.database[book1.isbn] = book1
+
+        book2 = Inventory_pb2.Book()
+        book2.isbn = "1235"
+        book2.author = "testAuthor2"
+        book2.title = "testTitle2"
+        book2.genre = Inventory_pb2.Book.FICTION
+        book2.publishingYear = 2001
+        self.database[book2.isbn] = book2
+
     # implementing create book
     def CreateBook(self, request, context):
         # fetching all parameters
@@ -29,7 +46,7 @@ class InventoryServiceServer(Inventory_pb2_grpc.InventoryServiceServicer):
         # check if title or author is empty
         elif title == '' or author == '':
             return Inventory_pb2.Result(isbn="", message="title and author should not be empty")
-        #adding the book to database
+        # adding the book to database
         self.database[isbn] = book
         return Inventory_pb2.Result(isbn=isbn, message="successfully created book")
 
@@ -42,11 +59,11 @@ class InventoryServiceServer(Inventory_pb2_grpc.InventoryServiceServicer):
             return Inventory_pb2.Book()
 
 
-#main server code
+# main server code
 def main():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=5))
     Inventory_pb2_grpc.add_InventoryServiceServicer_to_server(InventoryServiceServer(), server)
-    server.add_insecure_port('[::]:8083')
+    server.add_insecure_port('[::]:50052')
     server.start()
     server.wait_for_termination()
 
